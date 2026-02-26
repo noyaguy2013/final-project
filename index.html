@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>Outer Banks Quiz</title>
+
+<style>
+body{
+    font-family:Arial;
+    text-align:center;
+    background:#6e6e6e;
+    color:#ffffff;
+    direction:rtl;
+}
+h1{margin-top:20px;}
+.info-box{
+    background:#4d4d4d;
+    padding:15px 25px;
+    border-radius:20px;
+    margin:15px auto;
+    max-width:800px;
+    font-size:18px;
+    line-height:1.5em;
+}
+.characters{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:15px;
+}
+.character{
+    cursor:pointer; background:#2b2b2b; border-radius:20px; padding:10px; width:140px; transition:0.3s;
+}
+.character:hover{ transform:scale(1.07); background:#444;}
+.character img{width:100%; border-radius:15px;}
+.hidden{display:none;}
+.progress-container{width:80%; margin:20px auto; background:#333; border-radius:20px; overflow:hidden;}
+.progress-bar{height:20px; width:0%; background:limegreen; transition:0.4s;}
+#quizContainer{display:none; max-width:750px; margin:auto; background:#2b2b2b; padding:30px; border-radius:25px;}
+.options button{display:block; width:85%; margin:12px auto; padding:14px; font-size:20px; border-radius:30px; border:none; cursor:pointer; background:#444; color:white; transition:0.3s;}
+.options button:hover{background:#666;}
+.correct{background:green !important;}
+.wrong{background:red !important;}
+button{margin:15px; padding:14px 30px; font-size:18px; border-radius:30px; border:none; cursor:pointer; background:#222; color:white;}
+button:hover{background:#444;}
+</style>
+</head>
+
+<body>
+<h1>🌊 Outer Banks – חידון 🌴</h1>
+
+<!-- מידע על הסדרה -->
+<div class="info-box">
+<strong>Outer Banks</strong> היא סדרת הרפתקאות דרמה אמריקאית שמתרחשת באי דמיוני בצפון קרוליינה. הסדרה עוקבת אחרי קבוצה של בני נוער – הפוגס – במרדף אחרי אוצר אבוד של אביהם של חלק מהדמויות, תוך מאבקי מעמדות, אהבות, בגידות והרפתקאות מסוכנות. קיארה, ג'ון בי, JJ, פופ, קליאו ושרה הם חלק מהדמויות המרכזיות שמנהלות את הסיפור המותח והמרתק.
+</div>
+
+<div class="characters" id="charactersBox">
+    <div class="character" onclick="showInfo('char1')"><p>Kiara</p><img src="https://i.pinimg.com/236x/bd/84/00/bd84006fe6c5a3c2c289d4a49703ea72.jpg"></div>
+    <div class="character" onclick="showInfo('char5')"><p>Sara</p><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTU0J5bh_XSz4cTnFpLpGqMYV9K1fu6suaPMg&s"></div>
+    <div class="character" onclick="showInfo('char3')"><p>Cleo</p><img src="https://i.pinimg.com/736x/b1/38/d7/b138d731683757b38b2b0773244972ec.jpg"></div>
+    <div class="character" onclick="showInfo('char4')"><p>John B</p><img src="https://i.pinimg.com/736x/40/ca/7b/40ca7bed7ff05dbd353dfcf068d0194e.jpg"></div>
+    <div class="character" onclick="showInfo('char2')"><p>JJ</p><img src="https://image-cdn-ak.spotifycdn.com/image/ab67706c0000da841838dc4a85ed100c1f0bab2e"></div>
+    <div class="character" onclick="showInfo('char6')"><p>Pope</p><img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcR7NCsqoKC0MX8Nbyc2EwGfaU0HEWE1tVBc26YgdagDJJ7djw5c"></div>
+</div>
+
+<div id="info">
+<p id="char1" class="hidden">קיארה – אידיאליסטית ונאמנה.</p>
+<p id="char2" class="hidden">JJ – אימפולסיבי ונאמן.</p>
+<p id="char3" class="hidden">קליאו – חכמה ושורדת.</p>
+<p id="char4" class="hidden">ג'ון בי – מנהיג הפוגס.</p>
+<p id="char5" class="hidden">שרה – בין אהבה לעושר.</p>
+<p id="char6" class="hidden">פופ – המוח של הקבוצה.</p>
+</div>
+
+<button id="startBtn" onclick="startQuiz()">🚀 התחל חידון</button>
+
+<div id="levelSelect" class="hidden">
+    <button onclick="startLevel('easy')">🟢 רמה קלה</button>
+    <button onclick="startLevel('hard')">🔵 רמה קשה</button>
+    <button onclick="startLevel('extreme')">🔴 רמה אקסטרים</button>
+</div>
+
+<div id="quizContainer">
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+<div id="questionBox"></div>
+<div id="optionsBox" class="options"></div>
+<div id="resultBox"></div>
+<button onclick="location.reload()">🚪 יציאה</button>
+</div>
+
+<script>
+// 🎵 סאונד מובנה + רטט
+let audioCtx;
+function initAudio(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}}
+function playCorrect(){initAudio();if(navigator.vibrate)navigator.vibrate(100);const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.type="triangle";o.frequency.setValueAtTime(500,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(1000,audioCtx.currentTime+0.3);g.gain.setValueAtTime(0.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.4);}
+function playWrong(){initAudio();if(navigator.vibrate)navigator.vibrate([200,100,200]);const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.type="sawtooth";o.frequency.setValueAtTime(300,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(70,audioCtx.currentTime+0.5);g.gain.setValueAtTime(0.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.5);}
+
+// 🔹 שאלות לפי רמה (8 שאלות לכל רמה)
+const levels = {
+easy:[
+{q:"מי המנהיג?",options:["JJ","פופ","ג'ון בי"],correct:2},
+{q:"מי המוח של הקבוצה?",options:["פופ","JJ","טופר"],correct:0},
+{q:"מי אימפולסיבי?",options:["שרה","JJ","קליאו"],correct:1},
+{q:"מה התכונה העיקרית של קיארה?",options:["נאמנות","עושר","כוח"],correct:0},
+{q:"מי החברה של ג'ון בי?",options:["קליאו","שרה","קיארה"],correct:1},
+{q:"איפה מתרחשת הסדרה?",options:["קליפורניה","Outer Banks","פלורידה"],correct:1},
+{q:"מי תמיד נאמן?",options:["JJ","קיארה","רייף"],correct:1},
+{q:"מי חכמה ושורדת?",options:["קליאו","שרה","פופ"],correct:0}
+],
+hard:[
+{q:"מי אבא של ג'ון בי?",options:["וורד","ביג ג'ון","לוק"],correct:1},
+{q:"מי אבא של JJ?",options:["לוק","וורד","פופ"],correct:0},
+{q:"מי עזר בנסאו?",options:["קליאו","טופר","רייף"],correct:0},
+{q:"איפה הזהב הוחבא?",options:["כנסייה","מערה","מטוס"],correct:0},
+{q:"מי ירה בשריף?",options:["רייף","וורד","לוק"],correct:0},
+{q:"איך פוגשים את קליאו?",options:["שוד","ספינה","בריחה"],correct:1},
+{q:"מי רודף אחרי האוצר?",options:["טופר","פופ","JJ"],correct:0},
+{q:"מי מסוכן לאהבה של ג'ון בי?",options:["קיארה","שרה","קליאו"],correct:1}
+],
+extreme:[
+{q:"איך נקרא האוצר בעונה 2?",options:["הכתר","צלב סנטו דומינגו","זהב"],correct:1},
+{q:"מי כמעט הרג את שרה?",options:["טופר","רייף","וורד"],correct:1},
+{q:"איך מגיעים לפוגלנדיה?",options:["סירה","מטוס","ספינה נטושה"],correct:2},
+{q:"מי גנב את הזהב מביג ג'ון?",options:["וורד","רייף","טופר"],correct:0},
+{q:"איפה מתרחש הקרב האחרון בעונה 3?",options:["אי נטוש","ספינה","עיר"],correct:0},
+{q:"מי נאמן לפוגס מההתחלה?",options:["קיארה","טופר","רייף"],correct:0},
+{q:"מי מנהל את העסק של וורד?",options:["פופ","וורד","טופר"],correct:1},
+{q:"מי עוזר לגנוב את האוצר?",options:["קליאו","JJ","קיארה"],correct:0}
+]
+};
+
+let quizQuestions=[]; let currentQuestion=0; let score=0; let currentLevel="";
+
+function showInfo(id){document.querySelectorAll('#info p').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+
+function startQuiz(){document.getElementById("charactersBox").style.display="none";document.getElementById("info").style.display="none";document.getElementById("startBtn").style.display="none";document.getElementById("levelSelect").classList.remove('hidden');}
+
+function startLevel(level){
+currentLevel=level;
+quizQuestions=[...levels[level]];
+currentQuestion=0; score=0;
+document.getElementById("levelSelect").style.display="none";
+document.getElementById("quizContainer").style.display="block";
+showQuestion();
+}
+
+function updateProgress(){document.getElementById("progressBar").style.width=((currentQuestion/quizQuestions.length)*100)+"%";}
+
+function showQuestion(){
+updateProgress();
+if(currentQuestion>=quizQuestions.length){
+let percent=Math.round((score/quizQuestions.length)*100);
+document.getElementById("quizContainer").innerHTML=
+`<h2>סיימת!</h2><p>ניקוד: ${score}/${quizQuestions.length}</p><p>${percent}% הצלחה</p><button onclick="location.reload()">שחק שוב 🔄</button>`;
+return;
+}
+const q=quizQuestions[currentQuestion];
+questionBox.textContent=q.q;
+optionsBox.innerHTML="";
+resultBox.textContent="";
+q.options.forEach((opt,i)=>{
+const btn=document.createElement("button");btn.textContent=opt;
+btn.onclick=()=>{
+document.querySelectorAll(".options button").forEach(b=>b.disabled=true);
+if(i===q.correct){score++;btn.classList.add("correct");playCorrect();resultBox.textContent="👏 נכון!";}
+else{btn.classList.add("wrong");playWrong();resultBox.textContent="😢 טעות!";}
+setTimeout(()=>{currentQuestion++;showQuestion();},1500);
+};
+optionsBox.appendChild(btn);
+});
+}
+</script>
+</body>
+</html>
