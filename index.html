@@ -46,9 +46,8 @@ button:hover{background:#444;}
 <body>
 <h1>🌊 Outer Banks – חידון 🌴</h1>
 
-<!-- מידע על הסדרה -->
 <div class="info-box">
-<strong>Outer Banks</strong> היא סדרת הרפתקאות דרמה אמריקאית שמתרחשת באי דמיוני בצפון קרוליינה. הסדרה עוקבת אחרי קבוצה של בני נוער – הפוגס – במרדף אחרי אוצר אבוד של אביהם של חלק מהדמויות, תוך מאבקי מעמדות, אהבות, בגידות והרפתקאות מסוכנות. קיארה, ג'ון בי, JJ, פופ, קליאו ושרה הם חלק מהדמויות המרכזיות שמנהלות את הסיפור המותח והמרתק.
+<strong>Outer Banks</strong> היא סדרת הרפתקאות דרמה אמריקאית...
 </div>
 
 <div class="characters" id="charactersBox">
@@ -88,13 +87,23 @@ button:hover{background:#444;}
 </div>
 
 <script>
-// 🎵 סאונד מובנה + רטט
-let audioCtx;
-function initAudio(){if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}}
-function playCorrect(){initAudio();if(navigator.vibrate)navigator.vibrate(100);const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.type="triangle";o.frequency.setValueAtTime(500,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(1000,audioCtx.currentTime+0.3);g.gain.setValueAtTime(0.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.4);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.4);}
-function playWrong(){initAudio();if(navigator.vibrate)navigator.vibrate([200,100,200]);const o=audioCtx.createOscillator();const g=audioCtx.createGain();o.type="sawtooth";o.frequency.setValueAtTime(300,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(70,audioCtx.currentTime+0.5);g.gain.setValueAtTime(0.4,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.5);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+0.5);}
+// 🔊 סאונדים
+const winSound = new Audio("https://www.myinstants.com/media/sounds/applause.mp3");
+const loseSound = new Audio("https://www.myinstants.com/media/sounds/sad-trombone.mp3");
 
-// 🔹 שאלות לפי רמה (8 שאלות לכל רמה)
+function playCorrect(){
+    winSound.currentTime = 0;
+    winSound.play();
+    if(navigator.vibrate) navigator.vibrate(100);
+}
+
+function playWrong(){
+    loseSound.currentTime = 0;
+    loseSound.play();
+    if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+
+// שאלות
 const levels = {
 easy:[
 {q:"מי המנהיג?",options:["JJ","פופ","ג'ון בי"],correct:2},
@@ -128,14 +137,21 @@ extreme:[
 ]
 };
 
-let quizQuestions=[]; let currentQuestion=0; let score=0; let currentLevel="";
+let quizQuestions=[]; let currentQuestion=0; let score=0;
 
-function showInfo(id){document.querySelectorAll('#info p').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function showInfo(id){
+document.querySelectorAll('#info p').forEach(p=>p.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}
 
-function startQuiz(){document.getElementById("charactersBox").style.display="none";document.getElementById("info").style.display="none";document.getElementById("startBtn").style.display="none";document.getElementById("levelSelect").classList.remove('hidden');}
+function startQuiz(){
+document.getElementById("charactersBox").style.display="none";
+document.getElementById("info").style.display="none";
+document.getElementById("startBtn").style.display="none";
+document.getElementById("levelSelect").classList.remove('hidden');
+}
 
 function startLevel(level){
-currentLevel=level;
 quizQuestions=[...levels[level]];
 currentQuestion=0; score=0;
 document.getElementById("levelSelect").style.display="none";
@@ -143,7 +159,9 @@ document.getElementById("quizContainer").style.display="block";
 showQuestion();
 }
 
-function updateProgress(){document.getElementById("progressBar").style.width=((currentQuestion/quizQuestions.length)*100)+"%";}
+function updateProgress(){
+document.getElementById("progressBar").style.width=((currentQuestion/quizQuestions.length)*100)+"%";
+}
 
 function showQuestion(){
 updateProgress();
@@ -153,18 +171,36 @@ document.getElementById("quizContainer").innerHTML=
 `<h2>סיימת!</h2><p>ניקוד: ${score}/${quizQuestions.length}</p><p>${percent}% הצלחה</p><button onclick="location.reload()">שחק שוב 🔄</button>`;
 return;
 }
+
 const q=quizQuestions[currentQuestion];
 questionBox.textContent=q.q;
 optionsBox.innerHTML="";
 resultBox.textContent="";
+
 q.options.forEach((opt,i)=>{
-const btn=document.createElement("button");btn.textContent=opt;
+const btn=document.createElement("button");
+btn.textContent=opt;
+
 btn.onclick=()=>{
 document.querySelectorAll(".options button").forEach(b=>b.disabled=true);
-if(i===q.correct){score++;btn.classList.add("correct");playCorrect();resultBox.textContent="👏 נכון!";}
-else{btn.classList.add("wrong");playWrong();resultBox.textContent="😢 טעות!";}
-setTimeout(()=>{currentQuestion++;showQuestion();},1500);
+
+if(i===q.correct){
+score++;
+btn.classList.add("correct");
+playCorrect();
+resultBox.textContent="👏 נכון!";
+}else{
+btn.classList.add("wrong");
+playWrong();
+resultBox.textContent="😢 טעות!";
+}
+
+setTimeout(()=>{
+currentQuestion++;
+showQuestion();
+},1500);
 };
+
 optionsBox.appendChild(btn);
 });
 }
